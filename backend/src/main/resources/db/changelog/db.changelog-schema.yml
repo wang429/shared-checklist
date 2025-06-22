@@ -1,0 +1,134 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1-create-users-table
+      author: you
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: 2-create-checklists-table
+      author: you
+      changes:
+        - createTable:
+            tableName: checklists
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 3-create-checklist-items-table
+      author: you
+      changes:
+        - createTable:
+            tableName: checklist_items
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: checklist_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: content
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: checklist_items
+            baseColumnNames: checklist_id
+            referencedTableName: checklists
+            referencedColumnNames: id
+            constraintName: fk_checklist_items_checklist
+
+  - changeSet:
+      id: 4-create-user-checklist-progress-table
+      author: you
+      changes:
+        - createTable:
+            tableName: user_checklist_progress
+            columns:
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: checklist_item_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: checked
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+        - addPrimaryKey:
+            tableName: user_checklist_progress
+            columnNames: user_id, checklist_item_id
+            constraintName: pk_user_checklist_progress
+        - addForeignKeyConstraint:
+            baseTableName: user_checklist_progress
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_user_checklist_progress_user
+        - addForeignKeyConstraint:
+            baseTableName: user_checklist_progress
+            baseColumnNames: checklist_item_id
+            referencedTableName: checklist_items
+            referencedColumnNames: id
+            constraintName: fk_user_checklist_progress_item
+
+  # Performance indexes
+  - changeSet:
+      id: 5-add-performance-indexes
+      author: you
+      changes:
+        - createIndex:
+            tableName: checklist_items
+            indexName: idx_checklist_items_checklist_id
+            columns:
+              - column:
+                  name: checklist_id
+        - createIndex:
+            tableName: user_checklist_progress
+            indexName: idx_user_checklist_progress_item_id
+            columns:
+              - column:
+                  name: checklist_item_id
+        - createIndex:
+            tableName: user_checklist_progress
+            indexName: idx_user_checklist_progress_user_checked
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: checked

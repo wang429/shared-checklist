@@ -1,53 +1,32 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.asciidoctor.jvm.convert' version '3.3.2'
-}
-
-group = 'com.jcw'
-version = '0.0.1-SNAPSHOT'
-
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    id 'java'
+    id 'org.springframework.boot' version '3.5.3'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 repositories {
-	mavenCentral()
+    mavenLocal()
+    mavenCentral()
 }
 
-ext {
-	set('snippetsDir', file("build/generated-snippets"))
-	set('springCloudVersion', "2025.0.0")
+subprojects {
+    // common configuration if any
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.liquibase:liquibase-core'
-	implementation 'org.springframework.cloud:spring-cloud-function-context'
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'org.postgresql:postgresql'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+// Task to build the frontend by running npm commands
+tasks.register('buildFrontend', Exec) {
+    workingDir = 'frontend'
+    commandLine = ['npm', 'install']
+    doLast {
+        exec {
+            workingDir = file('frontend')
+            commandLine = ['npm', 'run', 'build']
+        }
+    }
 }
 
-dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-	}
-}
 
-tasks.named('test') {
-	outputs.dir snippetsDir
-	useJUnitPlatform()
-}
-
-tasks.named('asciidoctor') {
-	inputs.dir snippetsDir
-	dependsOn test
+// Root build depends on both backend build and frontend build
+tasks.register('buildAll') {
+    dependsOn ':frontend:build', ':backend:build'
 }

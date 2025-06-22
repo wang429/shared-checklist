@@ -1,0 +1,8 @@
+tasks.register('build', Exec) {
+    commandLine 'yarn', 'install'
+    doLast {
+        exec {
+            commandLine 'yarn', 'build'
+        }
+    }
+}
