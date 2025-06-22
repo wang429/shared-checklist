@@ -1,0 +1,117 @@
+<template>
+  <div id="app">
+    <LoginForm 
+      v-if="!isAuthenticated" 
+      @login-success="handleLoginSuccess" 
+    />
+    <div v-else class="app-container">
+      <div class="app-header">
+        <h1>Shared Checklist</h1>
+        <div class="auth-info">
+          <span>Logged in as: <strong>{{ currentUser }}</strong></span>
+          <button @click="handleLogout" class="logout-button">Logout</button>
+        </div>
+      </div>
+      <SharedChecklist />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import LoginForm from './components/LoginForm.vue';
+import SharedChecklist from './components/SharedChecklist.vue';
+import { isAuthenticated as checkAuth, getCurrentUsername, clearAuth } from './services/api';
+
+const isAuthenticated = ref(false);
+const currentUser = ref<string | null>(null);
+
+const updateAuthState = () => {
+  isAuthenticated.value = checkAuth();
+  currentUser.value = getCurrentUsername();
+};
+
+const handleLoginSuccess = () => {
+  updateAuthState();
+};
+
+const handleLogout = () => {
+  clearAuth();
+  updateAuthState();
+};
+
+// Listen for auth required events (from API interceptor)
+const handleAuthRequired = () => {
+  updateAuthState();
+};
+
+onMounted(() => {
+  updateAuthState();
+  window.addEventListener('auth-required', handleAuthRequired);
+});
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app-container {
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.app-header h1 {
+  color: #333;
+  margin: 0;
+}
+
+.auth-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.auth-info span {
+  color: #666;
+  font-size: 14px;
+}
+
+.logout-button {
+  padding: 8px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background: #c82333;
+}
+</style> 
