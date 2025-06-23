@@ -82,7 +82,6 @@ const createChecklist = async () => {
     resetForm();
     showForm.value = false;
     emit('checklistCreated', newChecklist.id);
-    
   } catch (err) {
     error.value = 'Failed to create checklist. Please try again.';
     console.error('Error creating checklist:', err);
@@ -100,15 +99,15 @@ const resetForm = () => {
 
 <style scoped>
 .create-checklist-form {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .create-button {
   background: #28a745;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -122,25 +121,25 @@ const resetForm = () => {
 .form-container {
   background: white;
   border: 2px solid #28a745;
-  border-radius: 8px;
-  padding: 20px;
-  margin-top: 15px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
 .form-container h3 {
   color: #333;
-  margin-bottom: 20px;
-  font-size: 18px;
+  margin-bottom: 15px;
+  font-size: 17px;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   font-weight: 600;
   color: #333;
 }
@@ -148,9 +147,9 @@ const resetForm = () => {
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px;
+  padding: 8px;
   border: 2px solid #ddd;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s;
@@ -164,21 +163,21 @@ const resetForm = () => {
 
 .form-group textarea {
   resize: vertical;
-  min-height: 120px;
+  min-height: 100px;
 }
 
 .form-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 15px;
 }
 
 .submit-button {
   background: #28a745;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -198,8 +197,8 @@ const resetForm = () => {
   background: #6c757d;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -212,9 +211,9 @@ const resetForm = () => {
 .error-message {
   background: #fff5f5;
   color: #cc0000;
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 15px;
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 10px;
   border: 1px solid #ffcdd2;
   font-size: 14px;
 }

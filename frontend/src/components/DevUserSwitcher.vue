@@ -52,33 +52,34 @@ defineExpose({
 .user-switcher {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
+  gap: 8px;
+  padding: 6px 10px;
   background: #e3f2fd;
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid #bbdefb;
-  margin-bottom: 10px;
+  margin-bottom: 0;
 }
 
 .user-switcher label {
   font-weight: 600;
   color: #1565c0;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
 .user-switcher select {
-  padding: 6px 10px;
+  padding: 4px 8px;
   border: 1px solid #90caf9;
-  border-radius: 4px;
+  border-radius: 3px;
   background: white;
   color: #1565c0;
   font-weight: 500;
+  font-size: 13px;
 }
 
 .user-switcher select:focus {
   outline: none;
   border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+  box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.2);
 }
 </style> 

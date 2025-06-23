@@ -15,11 +15,11 @@
       <div class="app-header">
         <h1>Shared Checklist</h1>
         <div class="auth-info">
+          <DevUserSwitcher v-if="isDev" ref="userSwitcher" @user-changed="handleUserSwitch" />
           <span>Logged in as: <strong>{{ currentUser }}</strong></span>
           <button @click="handleLogout" class="logout-button" v-if="isDev">Logout</button>
         </div>
       </div>
-      <DevUserSwitcher v-if="isDev" ref="userSwitcher" @user-changed="handleUserSwitch" />
       <SharedChecklist ref="checklistComponent" />
     </div>
   </div>
@@ -146,28 +146,29 @@ body {
 
 .app-container {
   min-height: 100vh;
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 40px;
+  padding: 15px 30px;
   background: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
 }
 
 .app-header h1 {
   color: #333;
   margin: 0;
+  font-size: 24px;
 }
 
 .auth-info {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .auth-info span {
@@ -176,12 +177,12 @@ body {
 }
 
 .logout-button {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background: #dc3545;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -200,10 +201,10 @@ body {
 }
 
 .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e3f2fd;
-  border-top: 4px solid #007bff;
+  width: 35px;
+  height: 35px;
+  border: 3px solid #e3f2fd;
+  border-top: 3px solid #007bff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -214,9 +215,9 @@ body {
 }
 
 .loading-container p {
-  margin-top: 20px;
+  margin-top: 15px;
   color: #666;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .auth-required-container {
@@ -229,20 +230,20 @@ body {
 
 .auth-message {
   background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   text-align: center;
   max-width: 400px;
 }
 
 .auth-message h2 {
   color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .auth-message p {
   color: #666;
-  margin: 10px 0;
+  margin: 8px 0;
 }
 </style> 

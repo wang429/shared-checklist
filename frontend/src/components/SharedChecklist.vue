@@ -9,13 +9,8 @@
           </option>
         </select>
       </div>
-      <div class="current-user-info">
-        <span class="current-user-label">Logged in as:</span>
-        <span class="current-user-name">{{ currentUserName }}</span>
-      </div>
+      <CreateChecklistForm @checklist-created="onChecklistCreated" />
     </div>
-
-    <CreateChecklistForm @checklist-created="onChecklistCreated" />
 
     <div v-if="loading" class="loading">Loading checklist...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
@@ -63,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { checklistApi } from '../services/api';
 import type { ChecklistItem, ChecklistSummary, User } from '../types/api';
 import CreateChecklistForm from './CreateChecklistForm.vue';
@@ -106,6 +101,14 @@ const loadCurrentUser = async () => {
     console.error('Error loading current user:', err);
     if (err.name !== 'AuthenticationError') {
       error.value = 'Failed to load current user. Please try again.';
+    }
+    
+    // In dev mode, if we can't get current user, ensure we have a default dev user set
+    const savedDevUser = localStorage.getItem('dev-selected-user');
+    if (!savedDevUser) {
+      localStorage.setItem('dev-selected-user', 'alice');
+      // Retry after setting default user
+      setTimeout(() => loadCurrentUser(), 100);
     }
   }
 };
@@ -224,8 +227,28 @@ defineExpose({
   initializeData
 });
 
-onMounted(() => {
-  // Don't make any API calls on mount - wait for parent to trigger after auth
+// Watch for when we need to reinitialize data
+watch(
+  () => [currentUser.value, availableChecklists.value.length],
+  async ([user, checklistCount]) => {
+    // If we have a user but no checklists, try to load data
+    if (user && checklistCount === 0) {
+      await nextTick();
+      await loadChecklists();
+      await loadUsers();
+      if (checklistId.value) {
+        await loadChecklist();
+      }
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(async () => {
+  // Try to initialize data immediately if we don't have current user
+  if (!currentUser.value) {
+    await initializeData();
+  }
 });
 </script>
 
@@ -233,59 +256,49 @@ onMounted(() => {
 .shared-checklist {
   max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .selector-container {
   display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-bottom: 30px;
-  padding: 20px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 15px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   flex-wrap: wrap;
 }
 
-.checklist-selector,
-.current-user-info {
+.checklist-selector {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
-.checklist-selector label,
-.current-user-label {
+.checklist-selector label {
   font-weight: 600;
   color: #555;
   white-space: nowrap;
 }
 
 .checklist-selector select {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border: 2px solid #ddd;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 14px;
   background: white;
   min-width: 150px;
 }
 
-.current-user-name {
-  font-weight: bold;
-  color: #007bff;
-  background: #e3f2fd;
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid #bbdefb;
-}
-
 .loading, .error {
   text-align: center;
-  padding: 20px;
-  margin: 20px 0;
-  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 6px;
 }
 
 .loading {
@@ -301,24 +314,24 @@ onMounted(() => {
 
 .checklist-container {
   background: white;
-  border-Radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
 .users-header {
   display: flex;
   background: #f5f5f5;
-  padding: 15px;
+  padding: 10px;
   font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .item-label {
   flex: 1;
   color: #333;
-  padding: 8px 10px;
-  margin: 0 2px;
+  padding: 6px 8px;
+  margin: 0 1px;
   text-align: left;
 }
 
@@ -331,31 +344,31 @@ onMounted(() => {
   flex: 1;
   text-align: center;
   color: #555;
-  padding: 8px 10px;
+  padding: 6px 8px;
   position: relative;
-  margin: 0 2px;
+  margin: 0 1px;
 }
 
 .current-user-column {
   background: #e3f2fd;
   color: #1565c0;
   font-weight: bold;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .current-badge {
   display: block;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #1976d2;
-  margin-top: 2px;
+  margin-top: 1px;
   letter-spacing: 0.5px;
 }
 
 .checklist-item {
   display: flex;
   align-items: center;
-  padding: 15px;
+  padding: 10px;
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
 }
@@ -371,9 +384,9 @@ onMounted(() => {
 .item-content {
   flex: 1;
   color: #333;
-  font-size: 16px;
-  padding: 8px 10px;
-  margin: 0 2px;
+  font-size: 15px;
+  padding: 6px 8px;
+  margin: 0 1px;
   text-align: left;
 }
 
@@ -388,18 +401,18 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 8px 10px;
-  margin: 0 2px;
+  padding: 6px 8px;
+  margin: 0 1px;
 }
 
 .current-user-checkbox {
-  margin-right: 8px;
-  transform: scale(1.2);
+  margin-right: 6px;
+  transform: scale(1.1);
   cursor: pointer;
 }
 
 .progress-indicator {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
 }
 
@@ -409,13 +422,13 @@ onMounted(() => {
 
 .progress-indicator.current-user {
   background: #e3f2fd;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
 }
 
 .current-user {
   background: #e8f5e8;
-  border-radius: 4px;
-  padding: 2px;
+  border-radius: 3px;
+  padding: 1px;
 }
 </style> 
