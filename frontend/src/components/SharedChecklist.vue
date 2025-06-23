@@ -67,6 +67,27 @@
           </div>
         </template>
       </draggable>
+
+      <!-- Add new task form -->
+      <div class="add-task-form">
+        <div class="add-task-input-container">
+          <input 
+            v-model="newTaskContent"
+            type="text"
+            placeholder="Add a new task..."
+            class="add-task-input"
+            @keyup.enter="addNewTask"
+            :disabled="addingTask"
+          />
+          <button 
+            @click="addNewTask"
+            class="add-task-button"
+            :disabled="!newTaskContent.trim() || addingTask"
+          >
+            {{ addingTask ? 'Adding...' : 'Add Task' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -283,6 +304,41 @@ const onReorder = async (event: any) => {
     await loadChecklist();
   }
 };
+
+const newTaskContent = ref('');
+const addingTask = ref(false);
+
+const addNewTask = async () => {
+  if (!currentUser.value || !checklistId.value || !newTaskContent.value.trim()) return;
+  
+  addingTask.value = true;
+  error.value = '';
+  
+  try {
+    console.log('Adding new task:', {
+      checklistId: checklistId.value,
+      content: newTaskContent.value,
+      currentUser: currentUser.value
+    });
+    
+    const newItem = await checklistApi.addItemToChecklist(checklistId.value, newTaskContent.value);
+    console.log('New task added successfully:', newItem);
+    
+    newTaskContent.value = '';
+    await loadChecklist();
+  } catch (err) {
+    console.error('Error adding new task:', err);
+    if (err.response) {
+      console.error('Response status:', err.response.status);
+      console.error('Response data:', err.response.data);
+      error.value = `Failed to add new task: ${err.response.data.message || err.response.statusText}`;
+    } else {
+      error.value = 'Failed to add new task. Please try again.';
+    }
+  } finally {
+    addingTask.value = false;
+  }
+};
 </script>
 
 <style scoped>
@@ -488,5 +544,33 @@ const onReorder = async (event: any) => {
   border-bottom: 1px solid #f0f0f0;
   transition: background-color 0.2s;
   cursor: move;
+}
+
+.add-task-form {
+  padding: 10px;
+  background: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
+}
+
+.add-task-input-container {
+  display: flex;
+  gap: 8px;
+}
+
+.add-task-input {
+  padding: 6px 10px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  flex: 1;
+}
+
+.add-task-button {
+  padding: 6px 10px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
 }
 </style> 

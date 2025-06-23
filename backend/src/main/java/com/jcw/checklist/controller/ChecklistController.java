@@ -134,6 +134,34 @@ public class ChecklistController {
     }
   }
 
+  @PostMapping("/{checklistId}/items")
+  public ChecklistDTO addItemToChecklist(@PathVariable Long checklistId, @RequestBody AddItemRequest request) {
+    // Validate request
+    if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item content is required");
+    }
+
+    // Verify checklist exists
+    Checklist checklist = checklistRepo.findById(checklistId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Checklist not found"));
+
+    // Get the highest display order for this checklist
+    List<ChecklistItem> existingItems = checklistItemRepo.findByChecklistIdOrderByDisplayOrderAsc(checklistId);
+    int nextDisplayOrder = existingItems.isEmpty() ? 0 : 
+        existingItems.get(existingItems.size() - 1).getDisplayOrder() + 1;
+
+    // Create the new item
+    ChecklistItem newItem = new ChecklistItem();
+    newItem.setContent(request.getContent().trim());
+    newItem.setChecklist(checklist);
+    newItem.setDisplayOrder(nextDisplayOrder);
+
+    ChecklistItem savedItem = checklistItemRepo.save(newItem);
+
+    // Return as DTO to avoid circular reference
+    return new ChecklistDTO(savedItem.getId(), savedItem.getContent(), new HashMap<>());
+  }
+
   @PostMapping
   public ChecklistSummaryDTO createChecklist(@RequestBody CreateChecklistRequest request) {
     // Validate request
@@ -181,6 +209,14 @@ public class ChecklistController {
 
     public List<Long> getItemIds() { return itemIds; }
     public void setItemIds(List<Long> itemIds) { this.itemIds = itemIds; }
+  }
+
+  // DTO for adding items to a checklist
+  public static class AddItemRequest {
+    private String content;
+
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
   }
 
 }

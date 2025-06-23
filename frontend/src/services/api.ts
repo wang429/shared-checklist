@@ -121,6 +121,13 @@ export const checklistApi = {
       itemIds: itemIds
     });
   },
+
+  async addItemToChecklist(checklistId: number, content: string): Promise<ChecklistItem> {
+    const response = await api.post(`/checklists/${checklistId}/items`, {
+      content: content
+    });
+    return response.data;
+  },
 };
 
 export default api; 
