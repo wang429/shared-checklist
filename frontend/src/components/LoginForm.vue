@@ -40,11 +40,14 @@
       
       <div class="demo-credentials">
         <h4>Demo Credentials:</h4>
-        <p><strong>Username:</strong> user</p>
+        <p><strong>Username:</strong> alice</p>
         <p><strong>Password:</strong> password</p>
         <button @click="useDemo" class="demo-button" :disabled="loading">
           Use Demo Credentials
         </button>
+        <div class="other-users">
+          <p><small>Other users: bob, carol, admin (all use "password")</small></p>
+        </div>
       </div>
     </div>
   </div>
@@ -94,7 +97,7 @@ const handleLogin = async () => {
 };
 
 const useDemo = () => {
-  username.value = 'user';
+  username.value = 'alice';
   password.value = 'password';
   handleLogin();
 };
@@ -237,5 +240,15 @@ const useDemo = () => {
 .demo-button:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.other-users {
+  margin-top: 10px;
+}
+
+.other-users p {
+  color: #888;
+  font-size: 12px;
+  margin: 0;
 }
 </style> 

@@ -70,11 +70,17 @@ const users = ref<User[]>([]);
 
 const loadCurrentUser = async () => {
   try {
+    console.log('Making API call to getCurrentUser...');
     currentUser.value = await checklistApi.getCurrentUser();
+    console.log('getCurrentUser API response:', currentUser.value);
     currentUserName.value = currentUser.value.username;
+    console.log('Set currentUserName to:', currentUserName.value);
   } catch (err) {
-    error.value = 'Failed to load current user. Please try again.';
+    // Silently fail if not authenticated - this prevents browser auth dialogs
     console.error('Error loading current user:', err);
+    if (err.name !== 'AuthenticationError') {
+      error.value = 'Failed to load current user. Please try again.';
+    }
   }
 };
 
@@ -93,8 +99,10 @@ const loadChecklists = async () => {
 
 const loadUsers = async () => {
   try {
-    const response = await fetch('/api/user');
-    users.value = await response.json();
+    console.log('Making API call to get all users...');
+    const response = await checklistApi.getAllUsers();
+    console.log('getAllUsers API response:', response);
+    users.value = response;
   } catch (err) {
     console.error('Error loading users:', err);
     // Fallback to current user only
@@ -145,19 +153,44 @@ const toggleItem = async (itemId: number, userId: string) => {
   }
 };
 
-onMounted(async () => {
-  // Load current authenticated user first
-  await loadCurrentUser();
+// Function to initialize data after authentication
+const initializeData = async () => {
+  console.log('SharedChecklist: initializeData called');
   
-  if (currentUser.value) {
-    // Load available checklists and all users
-    await Promise.all([loadChecklists(), loadUsers()]);
+  try {
+    console.log('Loading current user...');
+    await loadCurrentUser();
+    console.log('Current user loaded:', currentUser.value);
     
-    // Load the checklist once we have everything
-    if (checklistId.value) {
-      await loadChecklist();
+    if (currentUser.value) {
+      console.log('Loading checklists and users...');
+      // Load available checklists and all users
+      await Promise.all([loadChecklists(), loadUsers()]);
+      console.log('Checklists loaded:', availableChecklists.value);
+      console.log('Users loaded:', users.value);
+      
+      // Load the checklist once we have everything
+      if (checklistId.value) {
+        console.log('Loading checklist with ID:', checklistId.value);
+        await loadChecklist();
+      } else {
+        console.log('No checklist ID selected');
+      }
+    } else {
+      console.error('No current user found after loadCurrentUser');
     }
+  } catch (error) {
+    console.error('Error in initializeData:', error);
   }
+};
+
+// Expose the initialize function for parent component to call
+defineExpose({
+  initializeData
+});
+
+onMounted(() => {
+  // Don't make any API calls on mount - wait for parent to trigger after auth
 });
 </script>
 

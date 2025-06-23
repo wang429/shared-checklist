@@ -12,7 +12,7 @@
           <button @click="handleLogout" class="logout-button">Logout</button>
         </div>
       </div>
-      <SharedChecklist />
+      <SharedChecklist ref="checklistComponent" />
     </div>
   </div>
 </template>
@@ -25,14 +25,30 @@ import { isAuthenticated as checkAuth, getCurrentUsername, clearAuth } from './s
 
 const isAuthenticated = ref(false);
 const currentUser = ref<string | null>(null);
+const checklistComponent = ref<any>(null);
 
 const updateAuthState = () => {
   isAuthenticated.value = checkAuth();
   currentUser.value = getCurrentUsername();
 };
 
-const handleLoginSuccess = () => {
+const handleLoginSuccess = async () => {
+  console.log('Login success - updating auth state');
   updateAuthState();
+  
+  console.log('Current user after auth update:', currentUser.value);
+  console.log('Checklist component ref:', checklistComponent.value);
+  
+  // Wait for next tick to ensure component is fully mounted
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Initialize the checklist component after successful login
+  if (checklistComponent.value) {
+    console.log('Calling initializeData on checklist component');
+    await checklistComponent.value.initializeData();
+  } else {
+    console.error('Checklist component ref is null!');
+  }
 };
 
 const handleLogout = () => {
@@ -48,6 +64,9 @@ const handleAuthRequired = () => {
 onMounted(() => {
   updateAuthState();
   window.addEventListener('auth-required', handleAuthRequired);
+  
+  // Don't try to load user data on mount - wait for explicit login
+  // This prevents browser auth dialogs on page load
 });
 </script>
 

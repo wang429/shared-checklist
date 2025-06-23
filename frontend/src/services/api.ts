@@ -57,8 +57,11 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       clearAuth();
-      // You could emit an event here or call a callback to handle login redirect
+      // Prevent browser basic auth dialog by suppressing the error
+      const suppressedError = new Error('Authentication required');
+      suppressedError.name = 'AuthenticationError';
       window.dispatchEvent(new CustomEvent('auth-required'));
+      return Promise.reject(suppressedError);
     }
     return Promise.reject(error);
   }
@@ -67,7 +70,7 @@ api.interceptors.response.use(
 export const checklistApi = {
   async testAuth(): Promise<boolean> {
     try {
-      await api.get('/checklists/1');
+      await api.get('/user/current');
       return true;
     } catch (error) {
       return false;
@@ -76,6 +79,11 @@ export const checklistApi = {
 
   async getCurrentUser(): Promise<any> {
     const response = await api.get('/user/current');
+    return response.data;
+  },
+
+  async getAllUsers(): Promise<any[]> {
+    const response = await api.get('/user');
     return response.data;
   },
 
