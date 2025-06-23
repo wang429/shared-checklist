@@ -10,6 +10,10 @@ spring:
       additional-paths: src/main/java
     livereload:
       enabled: true
+  profiles:
+    active:
+      - dev # Default to dev profile
+      - h2
 
   jpa:
     properties:

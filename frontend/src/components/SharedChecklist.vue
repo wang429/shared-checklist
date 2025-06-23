@@ -70,11 +70,8 @@ const users = ref<User[]>([]);
 
 const loadCurrentUser = async () => {
   try {
-    console.log('Making API call to getCurrentUser...');
     currentUser.value = await checklistApi.getCurrentUser();
-    console.log('getCurrentUser API response:', currentUser.value);
     currentUserName.value = currentUser.value.username;
-    console.log('Set currentUserName to:', currentUserName.value);
   } catch (err) {
     // Silently fail if not authenticated - this prevents browser auth dialogs
     console.error('Error loading current user:', err);
@@ -129,7 +126,13 @@ const loadChecklist = async () => {
 };
 
 const toggleItem = async (itemId: number, userId: string) => {
-  if (!currentUser.value || userId !== currentUser.value.id || !checklistId.value) return;
+  if (!currentUser.value || !checklistId.value) return;
+  
+  // Only allow toggling if this is the current user's checkbox
+  // In dev mode with user switching, currentUser reflects the selected dev user
+  if (userId !== currentUser.value.id) {
+    return;
+  }
   
   // Optimistic update - update UI immediately for better UX
   const item = checklistItems.value.find(item => item.id === itemId);

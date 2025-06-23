@@ -44,6 +44,13 @@ api.interceptors.request.use(
       const credentials = btoa(`${currentAuth.username}:${currentAuth.password}`);
       config.headers['Authorization'] = `Basic ${credentials}`;
     }
+    
+    // Add dev user header if in development mode
+    const devUser = localStorage.getItem('dev-selected-user');
+    if (devUser) {
+      config.headers['X-Dev-User'] = devUser;
+    }
+    
     return config;
   },
   (error) => {

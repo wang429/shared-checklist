@@ -1,17 +1,25 @@
 <template>
   <div id="app">
-    <LoginForm 
-      v-if="!isAuthenticated" 
-      @login-success="handleLoginSuccess" 
-    />
+    <div v-if="loading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading...</p>
+    </div>
+    <div v-else-if="!isAuthenticated" class="auth-required-container">
+      <div class="auth-message">
+        <h2>Authentication Required</h2>
+        <p>Please authenticate to access the shared checklist.</p>
+        <p><small>You will be redirected to the login page automatically.</small></p>
+      </div>
+    </div>
     <div v-else class="app-container">
       <div class="app-header">
         <h1>Shared Checklist</h1>
         <div class="auth-info">
           <span>Logged in as: <strong>{{ currentUser }}</strong></span>
-          <button @click="handleLogout" class="logout-button">Logout</button>
+          <button @click="handleLogout" class="logout-button" v-if="isDev">Logout</button>
         </div>
       </div>
+      <DevUserSwitcher v-if="isDev" ref="userSwitcher" @user-changed="handleUserSwitch" />
       <SharedChecklist ref="checklistComponent" />
     </div>
   </div>
@@ -19,41 +27,83 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import LoginForm from './components/LoginForm.vue';
 import SharedChecklist from './components/SharedChecklist.vue';
+import DevUserSwitcher from './components/DevUserSwitcher.vue';
 import { isAuthenticated as checkAuth, getCurrentUsername, clearAuth } from './services/api';
 
 const isAuthenticated = ref(false);
 const currentUser = ref<string | null>(null);
 const checklistComponent = ref<any>(null);
+const userSwitcher = ref<any>(null);
+const loading = ref(true);
+const isDev = ref(false);
 
-const updateAuthState = () => {
-  isAuthenticated.value = checkAuth();
-  currentUser.value = getCurrentUsername();
-};
-
-const handleLoginSuccess = async () => {
-  console.log('Login success - updating auth state');
-  updateAuthState();
-  
-  console.log('Current user after auth update:', currentUser.value);
-  console.log('Checklist component ref:', checklistComponent.value);
-  
-  // Wait for next tick to ensure component is fully mounted
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  // Initialize the checklist component after successful login
-  if (checklistComponent.value) {
-    console.log('Calling initializeData on checklist component');
-    await checklistComponent.value.initializeData();
-  } else {
-    console.error('Checklist component ref is null!');
+const updateAuthState = async () => {
+  loading.value = true;
+  try {
+    // In dev mode, ensure the stored user is set before making the API call
+    const savedDevUser = localStorage.getItem('dev-selected-user');
+    
+    // Create headers object and include dev user header if available
+    const headers = {};
+    if (savedDevUser) {
+      headers['X-Dev-User'] = savedDevUser;
+    }
+    
+    const response = await fetch('/api/user/current', { headers });
+    if (response.ok) {
+      // No auth required (dev mode) or already authenticated
+      isAuthenticated.value = true;
+      const userData = await response.json();
+      currentUser.value = userData.username;
+      
+      // Check if we're in dev mode by seeing if we got a user without auth
+      isDev.value = !checkAuth();
+      
+      // In dev mode, sync the user switcher with the current user
+      if (isDev.value && userSwitcher.value) {
+        userSwitcher.value.setCurrentUser(userData.username);
+      }
+    } else if (response.status === 401) {
+      // Auth required (production mode)
+      isAuthenticated.value = false;
+      // In production, redirect to login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    } else {
+      // Fallback to existing auth check
+      isAuthenticated.value = checkAuth();
+      currentUser.value = getCurrentUsername();
+    }
+  } catch (error) {
+    // Fallback to existing auth check
+    isAuthenticated.value = checkAuth();
+    currentUser.value = getCurrentUsername();
+  } finally {
+    loading.value = false;
   }
 };
 
 const handleLogout = () => {
-  clearAuth();
-  updateAuthState();
+  if (isDev.value) {
+    // In dev mode, just clear the auth state (though it will auto-login again)
+    clearAuth();
+    updateAuthState();
+  } else {
+    // In production, redirect to logout
+    window.location.href = '/logout';
+  }
+};
+
+const handleUserSwitch = async (username: string) => {
+  // Update the auth state with the new user
+  await updateAuthState();
+  
+  // Reload the checklist data with the new user context
+  if (checklistComponent.value) {
+    await checklistComponent.value.initializeData();
+  }
 };
 
 // Listen for auth required events (from API interceptor)
@@ -61,12 +111,18 @@ const handleAuthRequired = () => {
   updateAuthState();
 };
 
-onMounted(() => {
-  updateAuthState();
+onMounted(async () => {
+  await updateAuthState();
   window.addEventListener('auth-required', handleAuthRequired);
   
-  // Don't try to load user data on mount - wait for explicit login
-  // This prevents browser auth dialogs on page load
+  // If authenticated, initialize the checklist
+  if (isAuthenticated.value) {
+    // Wait for component to be ready
+    await new Promise(resolve => setTimeout(resolve, 100));
+    if (checklistComponent.value) {
+      await checklistComponent.value.initializeData();
+    }
+  }
 });
 </script>
 
@@ -132,5 +188,61 @@ body {
 
 .logout-button:hover {
   background: #c82333;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e3f2fd;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  margin-top: 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+.auth-required-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
+
+.auth-message {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  max-width: 400px;
+}
+
+.auth-message h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.auth-message p {
+  color: #666;
+  margin: 10px 0;
 }
 </style> 
