@@ -18,6 +18,8 @@ public class ChecklistItem {
 
   private String content;
 
+  private Integer displayOrder = 0;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "checklist_id")
   private Checklist checklist;
@@ -37,6 +39,14 @@ public class ChecklistItem {
 
   public void setContent(String content) {
     this.content = content;
+  }
+
+  public Integer getDisplayOrder() {
+    return displayOrder;
+  }
+
+  public void setDisplayOrder(Integer displayOrder) {
+    this.displayOrder = displayOrder;
   }
 
   public Checklist getChecklist() {

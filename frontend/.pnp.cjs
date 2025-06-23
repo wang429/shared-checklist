@@ -36,7 +36,8 @@ const RAW_RUNTIME_STATE =
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"],\
           ["vite", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:5.4.19"],\
           ["vue", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:3.5.17"],\
-          ["vue-tsc", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:1.8.27"]\
+          ["vue-tsc", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:1.8.27"],\
+          ["vuedraggable", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:4.1.0"]\
         ],\
         "linkType": "SOFT"\
       }]\
@@ -1920,7 +1921,8 @@ const RAW_RUNTIME_STATE =
           ["typescript", "patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"],\
           ["vite", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:5.4.19"],\
           ["vue", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:3.5.17"],\
-          ["vue-tsc", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:1.8.27"]\
+          ["vue-tsc", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:1.8.27"],\
+          ["vuedraggable", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:4.1.0"]\
         ],\
         "linkType": "SOFT"\
       }]\
@@ -1981,6 +1983,15 @@ const RAW_RUNTIME_STATE =
           ["debug", "virtual:643ed7cc338bcf145a82d8b05b3bef6bcf150ca545df386225596f10ce53cc90b88b3ca83e348ade1ccea5f3f8e76c92d2f0e2ba544da60d40aff9921c56872d#npm:4.4.1"],\
           ["socks", "npm:2.8.5"],\
           ["socks-proxy-agent", "npm:8.0.5"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["sortablejs", [\
+      ["npm:1.14.0", {\
+        "packageLocation": "../../../Users/James Wang/AppData/Local/Yarn/Berry/cache/sortablejs-npm-1.14.0-77f80432c4-10c0.zip/node_modules/sortablejs/",\
+        "packageDependencies": [\
+          ["sortablejs", "npm:1.14.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -2245,6 +2256,29 @@ const RAW_RUNTIME_STATE =
         "packagePeers": [\
           "@types/typescript",\
           "typescript"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["vuedraggable", [\
+      ["npm:4.1.0", {\
+        "packageLocation": "../../../Users/James Wang/AppData/Local/Yarn/Berry/cache/vuedraggable-npm-4.1.0-785593d488-10c0.zip/node_modules/vuedraggable/",\
+        "packageDependencies": [\
+          ["vuedraggable", "npm:4.1.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:4.1.0", {\
+        "packageLocation": "./.yarn/__virtual__/vuedraggable-virtual-a79c7e82b7/4/Users/James Wang/AppData/Local/Yarn/Berry/cache/vuedraggable-npm-4.1.0-785593d488-10c0.zip/node_modules/vuedraggable/",\
+        "packageDependencies": [\
+          ["@types/vue", null],\
+          ["sortablejs", "npm:1.14.0"],\
+          ["vue", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:3.5.17"],\
+          ["vuedraggable", "virtual:95f37d470253e0eef10935790fe0e3df0c4f51d356d3f7d838906bbd3d38c60c16abb850aa6a8a23c7f652c3cadb9d7e4bdbe3c8f7f8cc91f47f36840afeba31#npm:4.1.0"]\
+        ],\
+        "packagePeers": [\
+          "@types/vue",\
+          "vue"\
         ],\
         "linkType": "HARD"\
       }]\

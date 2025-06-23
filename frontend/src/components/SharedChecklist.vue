@@ -31,28 +31,42 @@
         </div>
       </div>
 
-      <div v-for="item in checklistItems" :key="item.id" class="checklist-item">
-        <div class="item-content">{{ item.content }}</div>
-        <div class="user-progress">
-          <div v-for="user in orderedUsers" :key="user.id" class="user-checkbox">
-            <!-- Show checkbox only for current user -->
-            <input 
-              v-if="currentUser && user.id === currentUser.id"
-              type="checkbox"
-              :checked="item.progress[user.username] || false"
-              @change="toggleItem(item.id, user.id)"
-              class="current-user-checkbox"
-            />
-            <!-- Show progress indicator for all users -->
-            <span class="progress-indicator" :class="{ 
-              'completed': item.progress[user.username], 
-              'current-user': currentUser && user.id === currentUser.id 
-            }">
-              {{ item.progress[user.username] ? '✓' : '○' }}
-            </span>
+      <draggable 
+        v-model="checklistItems" 
+        tag="div"
+        :disabled="false"
+        ghost-class="ghost"
+        chosen-class="chosen"
+        drag-class="drag"
+        @end="onReorder"
+        item-key="id"
+      >
+        <template #item="{ element: item }">
+          <div class="checklist-item">
+            <div class="drag-handle">⋮⋮</div>
+            <div class="item-content">{{ item.content }}</div>
+            <div class="user-progress">
+              <div v-for="user in orderedUsers" :key="user.id" class="user-checkbox">
+                <!-- Show checkbox only for current user -->
+                <input 
+                  v-if="currentUser && user.id === currentUser.id"
+                  type="checkbox"
+                  :checked="item.progress[user.username] || false"
+                  @change="toggleItem(item.id, user.id)"
+                  class="current-user-checkbox"
+                />
+                <!-- Show progress indicator for all users -->
+                <span class="progress-indicator" :class="{ 
+                  'completed': item.progress[user.username], 
+                  'current-user': currentUser && user.id === currentUser.id 
+                }">
+                  {{ item.progress[user.username] ? '✓' : '○' }}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </draggable>
     </div>
   </div>
 </template>
@@ -62,6 +76,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { checklistApi } from '../services/api';
 import type { ChecklistItem, ChecklistSummary, User } from '../types/api';
 import CreateChecklistForm from './CreateChecklistForm.vue';
+import draggable from 'vuedraggable';
 
 const checklistId = ref<number | null>(null);
 const availableChecklists = ref<ChecklistSummary[]>([]);
@@ -250,6 +265,24 @@ onMounted(async () => {
     await initializeData();
   }
 });
+
+const onReorder = async (event: any) => {
+  if (!checklistId.value) return;
+  
+  try {
+    // Extract the current order of item IDs
+    const itemIds = checklistItems.value.map(item => item.id);
+    
+    // Call the API to update the order on the server
+    await checklistApi.reorderItems(checklistId.value, itemIds);
+  } catch (err) {
+    error.value = 'Failed to reorder items. Please try again.';
+    console.error('Error reordering items:', err);
+    
+    // Reload the checklist to revert the optimistic update
+    await loadChecklist();
+  }
+};
 </script>
 
 <style scoped>
@@ -365,14 +398,6 @@ onMounted(async () => {
   letter-spacing: 0.5px;
 }
 
-.checklist-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s;
-}
-
 .checklist-item:hover {
   background: #fafafa;
 }
@@ -430,5 +455,38 @@ onMounted(async () => {
   background: #e8f5e8;
   border-radius: 3px;
   padding: 1px;
+}
+
+.drag-handle {
+  cursor: move;
+  padding: 0 8px;
+  color: #999;
+  font-weight: bold;
+  user-select: none;
+  display: flex;
+  align-items: center;
+}
+
+.ghost {
+  opacity: 0.5;
+  background: #f0f8ff;
+}
+
+.chosen {
+  background: #e3f2fd;
+}
+
+.drag {
+  transform: rotate(5deg);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+  cursor: move;
 }
 </style> 

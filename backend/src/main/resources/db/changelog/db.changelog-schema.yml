@@ -132,3 +132,31 @@ databaseChangeLog:
                   name: user_id
               - column:
                   name: checked
+
+  # Add display_order column for task reordering
+  - changeSet:
+      id: 6-add-display-order-to-checklist-items
+      author: you
+      changes:
+        - addColumn:
+            tableName: checklist_items
+            columns:
+              - column:
+                  name: display_order
+                  type: INTEGER
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: |
+              UPDATE checklist_items 
+              SET display_order = id 
+              WHERE display_order = 0
+        - createIndex:
+            tableName: checklist_items
+            indexName: idx_checklist_items_checklist_order
+            columns:
+              - column:
+                  name: checklist_id
+              - column:
+                  name: display_order

@@ -115,6 +115,12 @@ export const checklistApi = {
     });
     return response.data;
   },
+
+  async reorderItems(checklistId: number, itemIds: number[]): Promise<void> {
+    await api.put(`/checklists/${checklistId}/reorder`, {
+      itemIds: itemIds
+    });
+  },
 };
 
 export default api; 

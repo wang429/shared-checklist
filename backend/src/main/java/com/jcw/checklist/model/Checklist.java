@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class Checklist {
 
   // Bi-directional or uni-directional if preferred
   @OneToMany(mappedBy = "checklist", cascade = CascadeType.ALL)
+  @OrderBy("displayOrder ASC")
   private List<ChecklistItem> items;
 
   // getters/setters
