@@ -15,6 +15,8 @@
       </div>
     </div>
 
+    <CreateChecklistForm @checklist-created="onChecklistCreated" />
+
     <div v-if="loading" class="loading">Loading checklist...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     
@@ -64,6 +66,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { checklistApi } from '../services/api';
 import type { ChecklistItem, ChecklistSummary, User } from '../types/api';
+import CreateChecklistForm from './CreateChecklistForm.vue';
 
 const checklistId = ref<number | null>(null);
 const availableChecklists = ref<ChecklistSummary[]>([]);
@@ -177,6 +180,23 @@ const toggleItem = async (itemId: number, userId: string) => {
     }
     error.value = 'Failed to update item. Please try again.';
     console.error('Error toggling item:', err);
+  }
+};
+
+// Function to handle when a new checklist is created
+const onChecklistCreated = async (newChecklistId: number) => {
+  try {
+    // Refresh the available checklists
+    await loadChecklists();
+    
+    // Select the new checklist
+    checklistId.value = newChecklistId;
+    
+    // Load the new checklist
+    await loadChecklist();
+  } catch (err) {
+    error.value = 'Failed to load the new checklist. Please refresh the page.';
+    console.error('Error loading new checklist:', err);
   }
 };
 

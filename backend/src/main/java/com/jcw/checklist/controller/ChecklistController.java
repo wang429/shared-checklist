@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -100,6 +101,45 @@ public class ChecklistController {
     progress.setChecklistItemId(itemId);
     progress.setChecked(!progress.isChecked());
     progressRepo.save(progress);
+  }
+
+  @PostMapping
+  public ChecklistSummaryDTO createChecklist(@RequestBody CreateChecklistRequest request) {
+    // Validate request
+    if (request.getName() == null || request.getName().trim().isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Checklist name is required");
+    }
+    
+    // Create the checklist - let JPA handle ID generation
+    Checklist checklist = new Checklist();
+    checklist.setName(request.getName().trim());
+    checklist = checklistRepo.save(checklist);
+
+    // Create checklist items
+    if (request.getItems() != null && !request.getItems().isEmpty()) {
+      for (String itemContent : request.getItems()) {
+        if (itemContent != null && !itemContent.trim().isEmpty()) {
+          ChecklistItem item = new ChecklistItem();
+          item.setContent(itemContent.trim());
+          item.setChecklist(checklist);
+          checklistItemRepo.save(item);
+        }
+      }
+    }
+
+    // Return the created checklist as summary
+    return new ChecklistSummaryDTO(checklist.getId(), checklist.getName());
+  }
+
+  // DTO for creating checklists
+  public static class CreateChecklistRequest {
+    private String name;
+    private List<String> items;
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public List<String> getItems() { return items; }
+    public void setItems(List<String> items) { this.items = items; }
   }
 
 }

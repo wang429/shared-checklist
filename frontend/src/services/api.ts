@@ -107,6 +107,14 @@ export const checklistApi = {
   async toggleItem(checklistId: number, itemId: number, userId: string): Promise<void> {
     await api.post(`/checklists/${checklistId}/item/${itemId}/user/${userId}/toggle`);
   },
+
+  async createChecklist(name: string, items: string[]): Promise<ChecklistSummary> {
+    const response = await api.post('/checklists', {
+      name: name,
+      items: items
+    });
+    return response.data;
+  },
 };
 
 export default api; 
