@@ -22,8 +22,14 @@
       <div class="users-header">
         <div class="item-label">Task</div>
         <div class="user-columns">
-          <div v-for="user in users" :key="user.id" class="user-column">
+          <div 
+            v-for="(user, index) in orderedUsers" 
+            :key="user.id" 
+            class="user-column"
+            :class="{ 'current-user-column': index === 0 && currentUser && user.id === currentUser.id }"
+          >
             {{ user.username }}
+            <span v-if="index === 0 && currentUser && user.id === currentUser.id" class="current-badge">YOU</span>
           </div>
         </div>
       </div>
@@ -31,14 +37,16 @@
       <div v-for="item in checklistItems" :key="item.id" class="checklist-item">
         <div class="item-content">{{ item.content }}</div>
         <div class="user-progress">
-          <div v-for="user in users" :key="user.id" class="user-checkbox">
+          <div v-for="user in orderedUsers" :key="user.id" class="user-checkbox">
+            <!-- Show checkbox only for current user -->
             <input 
+              v-if="currentUser && user.id === currentUser.id"
               type="checkbox"
               :checked="item.progress[user.username] || false"
-              :disabled="!currentUser || user.id !== currentUser.id"
               @change="toggleItem(item.id, user.id)"
-              :class="{ 'current-user': currentUser && user.id === currentUser.id }"
+              class="current-user-checkbox"
             />
+            <!-- Show progress indicator for all users -->
             <span class="progress-indicator" :class="{ 
               'completed': item.progress[user.username], 
               'current-user': currentUser && user.id === currentUser.id 
@@ -68,6 +76,24 @@ const error = ref('');
 // All users for displaying progress - loaded from backend
 const users = ref<User[]>([]);
 
+// Computed property to show current user first
+const orderedUsers = computed(() => {
+  if (!currentUser.value || users.value.length === 0) {
+    return users.value;
+  }
+  
+  // Find current user and other users
+  const currentUserIndex = users.value.findIndex(user => user.id === currentUser.value!.id);
+  if (currentUserIndex === -1) {
+    return users.value; // Current user not found, return original order
+  }
+  
+  // Put current user first, then the rest
+  const reorderedUsers = [...users.value];
+  const currentUserData = reorderedUsers.splice(currentUserIndex, 1)[0];
+  return [currentUserData, ...reorderedUsers];
+});
+
 const loadCurrentUser = async () => {
   try {
     currentUser.value = await checklistApi.getCurrentUser();
@@ -96,9 +122,7 @@ const loadChecklists = async () => {
 
 const loadUsers = async () => {
   try {
-    console.log('Making API call to get all users...');
     const response = await checklistApi.getAllUsers();
-    console.log('getAllUsers API response:', response);
     users.value = response;
   } catch (err) {
     console.error('Error loading users:', err);
@@ -158,29 +182,17 @@ const toggleItem = async (itemId: number, userId: string) => {
 
 // Function to initialize data after authentication
 const initializeData = async () => {
-  console.log('SharedChecklist: initializeData called');
-  
   try {
-    console.log('Loading current user...');
     await loadCurrentUser();
-    console.log('Current user loaded:', currentUser.value);
     
     if (currentUser.value) {
-      console.log('Loading checklists and users...');
       // Load available checklists and all users
       await Promise.all([loadChecklists(), loadUsers()]);
-      console.log('Checklists loaded:', availableChecklists.value);
-      console.log('Users loaded:', users.value);
       
       // Load the checklist once we have everything
       if (checklistId.value) {
-        console.log('Loading checklist with ID:', checklistId.value);
         await loadChecklist();
-      } else {
-        console.log('No checklist ID selected');
       }
-    } else {
-      console.error('No current user found after loadCurrentUser');
     }
   } catch (error) {
     console.error('Error in initializeData:', error);
@@ -285,6 +297,9 @@ onMounted(() => {
 .item-label {
   flex: 1;
   color: #333;
+  padding: 8px 10px;
+  margin: 0 2px;
+  text-align: left;
 }
 
 .user-columns {
@@ -296,7 +311,25 @@ onMounted(() => {
   flex: 1;
   text-align: center;
   color: #555;
-  padding: 0 10px;
+  padding: 8px 10px;
+  position: relative;
+  margin: 0 2px;
+}
+
+.current-user-column {
+  background: #e3f2fd;
+  color: #1565c0;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.current-badge {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1976d2;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
 }
 
 .checklist-item {
@@ -319,6 +352,9 @@ onMounted(() => {
   flex: 1;
   color: #333;
   font-size: 16px;
+  padding: 8px 10px;
+  margin: 0 2px;
+  text-align: left;
 }
 
 .user-progress {
@@ -332,18 +368,14 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   position: relative;
-  padding: 0 10px;
+  padding: 8px 10px;
+  margin: 0 2px;
 }
 
-.user-checkbox input[type="checkbox"] {
+.current-user-checkbox {
   margin-right: 8px;
   transform: scale(1.2);
   cursor: pointer;
-}
-
-.user-checkbox input[type="checkbox"]:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .progress-indicator {
